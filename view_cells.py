@@ -20,24 +20,22 @@ def load_data(filename):
         lines = file.readlines()
 
     data = []
-    current_step = {'input_layer': [], 'middle_layer': [], 'output_layer': []}
+    current_step = None
+    current_layer = None
+
     for line in lines:
-        if line.startswith('Time Step'):
-            if current_step['input_layer']:  # if there's already data, start a new step
+        line = line.strip()
+        if line.startswith('Epoch:'):
+            if current_step is not None:
                 data.append(current_step)
-                current_step = {'input_layer': [], 'middle_layer': [], 'output_layer': []}
-        elif line.startswith('input_layer'):
-            current_layer = 'input_layer'
-        elif line.startswith('middle_layer'):
-            current_layer = 'middle_layer'
-        elif line.startswith('output_layer'):
-            current_layer = 'output_layer'
-        elif line.strip().startswith('['):
-            values = eval(line.strip())
+            current_step = {'input_layer': [], 'middle_layer': [], 'output_layer': []}
+        elif line.startswith('input_layer') or line.startswith('middle_layer') or line.startswith('output_layer'):
+            current_layer = line.split(':')[0]
+        elif line.startswith('['):
+            values = eval(line)
             current_step[current_layer].append(values)
 
-    # Add the last step if not empty
-    if current_step['input_layer']:
+    if current_step is not None:
         data.append(current_step)
 
     return data
